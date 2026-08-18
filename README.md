@@ -1,27 +1,20 @@
-# Android Basic Clean Architecture
+# Technical Documentation — Android Basic Clean Architecture
 
-> **Enterprise Android Kotlin Architecture with Jetpack Compose, Koin DI & Ktor Auth Interceptors**  
+> **Enterprise Android Kotlin Modular Architecture with Jetpack Compose, Koin DI & Ktor Auth Interceptors**  
 > *Architectural guidelines defined in `AGENTS.md`.*
 
-This repository provides a production-ready starter template for building modern Android applications using **Kotlin**, **Jetpack Compose (Material Design 3)**, **Koin Dependency Injection**, **Ktor Network Client**, and **Clean Architecture**.
+This repository provides a production-ready starter template for building modern Android applications using **Kotlin**, **Jetpack Compose (Material Design 3)**, **Koin Dependency Injection**, **Ktor Network Client**, and **Modular Clean Architecture**.
 
 ---
 
-## 🏛️ Architectural Foundation
+## 🏛️ Modular Clean Architecture Structure
 
-Our Android engineering philosophy strictly enforces Clean Architecture and Jetpack Compose best practices:
+The project is organized into clean, decoupled Gradle modules adhering to Clean Architecture principles:
 
-1. **Strict Layer Separation (`domain`, `data`, `ui`):**
-   * `domain`: Pure Kotlin entities, Result container interfaces, and repository abstractions. Zero Android SDK dependencies.
-   * `data`: Ktor Remote Data Source, DTOs, Mappers (`FileItemMapper`), and Repository implementations (`ExplorerRepositoryImpl`).
-   * `ui`: Jetpack Compose screens, ViewModels (`ExplorerViewModel`), and sealed state representations (`UiState<T>`).
-2. **UI Isolation:** Compose views never make direct network or database calls. State flows exclusively via `StateFlow<UiState<T>>`.
-3. **Koin Dependency Injection (`di/AppModule.kt`):** Decoupled singleton definitions and `viewModel { ... }` scoped instances.
-4. **Result Container Error Handling (`Result<T, E>`):** Explicit `Result.Success` and `Result.Failure` handling for predictable error propagation without runtime crashes.
-
----
-
-## 📁 Repository Layout
+- **`:app`** — UI presentation layer (Screens, ViewModels, Navigation, Android Manifest).
+- **`:core:domain`** — Pure Kotlin domain layer containing core models (`FileItem`) and repository contracts. Zero Android SDK dependencies.
+- **`:core:data`** — Data layer containing Ktor HTTP client implementation, repository concrete implementations, and Preference storage.
+- **`:core:ui`** — Reusable Compose components (`FileItemRow`, dialogs) and the Material 3 design system (`AppTheme`).
 
 ```
 android-basic-clean-architecture/
@@ -46,19 +39,67 @@ android-basic-clean-architecture/
 
 ---
 
-## 🚀 Key Features
+## 📦 Core Dependencies & Stack (`gradle/libs.versions.toml`)
 
-* **Jetpack Compose (Material Design 3):** Fully declarative UI built with standard Compose components.
-* **Koin Dependency Injection:** Lightweight, idiomatic Kotlin DI framework.
-* **Sealed `UiState<T>` State Machine:** Immutable reactive state management using `StateFlow` (`Loading`, `Success`, `Error`, `Empty`).
-* **Ktor Client Network Layer:** Modern Kotlin-multiplatform compatible HTTP client.
-* **Fake Data Provider (`FakeExplorerApi`):** Pre-configured mock data source with latency simulation for offline testing.
+The project relies on the following production dependencies:
+
+- **Dependency Injection**:
+  - `io.insert-koin:koin-android` (`4.0.0`)
+  - `io.insert-koin:koin-androidx-compose` (`4.0.0`)
+  - `io.insert-koin:koin-test` (`4.0.0`)
+- **Networking**:
+  - `io.ktor:ktor-client-core` (`3.0.1`)
+  - `io.ktor:ktor-client-cio` (`3.0.1`)
+  - `io.ktor:ktor-client-content-negotiation` (`3.0.1`)
+  - `io.ktor:ktor-client-logging` (`3.0.1`)
+  - `io.ktor:ktor-client-auth` (`3.0.1`)
+- **JSON Serialization**:
+  - `org.jetbrains.kotlinx:kotlinx-serialization-json` (`1.7.3`)
+  - `io.ktor:ktor-serialization-kotlinx-json` (`3.0.1`)
+- **UI Framework & Design System**:
+  - `androidx.compose.material3:material3` (Compose BOM `2024.11.00`)
+  - `androidx.compose.ui:ui`
+  - `androidx.compose.ui:ui-tooling-preview`
+  - `androidx.navigation:navigation-compose` (`2.8.4`)
+  - `androidx.compose.material:material-icons-extended` (`1.7.5`)
+- **Image Loading**:
+  - `io.coil-kt:coil-compose` (`2.7.0`)
+- **Coroutines & Async Operations**:
+  - `org.jetbrains.kotlinx:kotlinx-coroutines-core` (`1.9.0`)
+  - `org.jetbrains.kotlinx:kotlinx-coroutines-test` (`1.9.0`)
+
+---
+
+## 🤔 Architectural Rationale & Dependency Choices
+
+- **Koin**: 
+  Lightweight, pragmatic, Kotlin-native Dependency Injection framework. Unlike Dagger/Hilt, Koin does not rely on heavy code generation or annotation processing (kapt/ksp), resulting in significantly faster build times and a simpler codebase while offering out-of-the-box support for Compose ViewModels (`koinViewModel()`).
+
+- **Ktor Client**:
+  A modern, asynchronous Kotlin Multiplatform HTTP client that integrates natively with Kotlin Coroutines. It allows fine-grained control over network request logging (`LogLevel.HEADERS`) to avoid buffering binary payload bytes in RAM during large file uploads.
+
+- **Jetpack Compose & Material 3**:
+  The official modern standard for declarative UI on Android. It allows building responsive, reactive, and maintainable user interfaces with custom design themes (`AppTheme`), dynamic cards, dialogs, pull-to-refresh, and smooth transitions.
+
+- **Coil**:
+  Built specifically for Kotlin Coroutines and Compose, Coil provides lightweight, fast, and memory-efficient image loading and caching for remote media thumbnails.
+
+- **Kotlinx Serialization**:
+  The official Kotlin serialization compiler plugin. It is fast, reflection-free, and works seamlessly with Ktor for converting API responses to domain data models.
+
+---
+
+## ✨ User Experience & Platform Features
+
+- **Search & Multi-Criteria Sorting**: Real-time file/folder search and multi-criteria sorting (Name A-Z/Z-A, Date Newest/Oldest).
+- **Material 3 Pull-to-Refresh**: Integrated pull-to-refresh with summary counts for files and directories.
+- **Soft Keyboard Handling**: Handled soft keyboard overlap using Compose `imePadding()` and vertical scrolling.
+- **High-Resolution Branding**: Integrated custom high-resolution dark navy/cyan app icon across all density mipmap folders.
+- **Compose Tooling Previews**: Added complete `@Preview` functions for all screens and UI components.
 
 ---
 
 # 📖 How to Add a New Feature to the Android App
-
-This step-by-step guide outlines how to implement a new feature following our **Kotlin Clean Architecture** standard.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -87,24 +128,17 @@ This step-by-step guide outlines how to implement a new feature following our **
 └─────────────────────────────────────────────────────────────┘
 ```
 
----
-
 ### Step 1: Define DTO & API Layer (`data/dto/NewFeatureDto.kt`)
-
 ```kotlin
 package com.android.basiccleanarchitecture.data.dto
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NewFeatureDto(
-    val id: String,
-    val title: String
-)
+data class NewFeatureDto(val id: String, val title: String)
 ```
 
 ### Step 2: DTO-to-Domain Mapper (`data/mapper/NewFeatureMapper.kt`)
-
 ```kotlin
 package com.android.basiccleanarchitecture.data.mapper
 
@@ -119,9 +153,7 @@ class NewFeatureMapper {
 ```
 
 ### Step 3: Repository Interface & Implementation (`data/repository/`)
-
 ```kotlin
-// Domain Interface
 package com.android.basiccleanarchitecture.domain.repository
 import com.android.basiccleanarchitecture.core.result.Result
 import com.android.basiccleanarchitecture.domain.model.NewFeatureEntity
@@ -130,9 +162,7 @@ interface NewFeatureRepository {
     suspend fun getFeatureData(): Result<List<NewFeatureEntity>, Throwable>
 }
 
-// Data Implementation
 package com.android.basiccleanarchitecture.data.repository
-
 class NewFeatureRepositoryImpl(
     private val api: FakeExplorerApi,
     private val mapper: NewFeatureMapper
@@ -149,7 +179,6 @@ class NewFeatureRepositoryImpl(
 ```
 
 ### Step 4: ViewModel Layer (`ui/feature/NewFeatureViewModel.kt`)
-
 ```kotlin
 package com.android.basiccleanarchitecture.ui.feature
 
@@ -183,7 +212,6 @@ class NewFeatureViewModel(
 ```
 
 ### Step 5: Register DI Module in Koin (`di/AppModule.kt`)
-
 ```kotlin
 val appModule = module {
     single { NewFeatureMapper() }
