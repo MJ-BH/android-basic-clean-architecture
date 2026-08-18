@@ -1,9 +1,69 @@
 # Technical Documentation — Android Basic Clean Architecture
 
-> **Enterprise Android Kotlin Modular Architecture with Jetpack Compose, Koin DI & Ktor Auth Interceptors**  
+> **Enterprise Android Kotlin Modular Architecture with Product Flavors, Jetpack Compose, Koin DI & Ktor Auth Interceptors**  
 > *Architectural guidelines defined in `AGENTS.md`.*
 
 This repository provides a production-ready starter template for building modern Android applications using **Kotlin**, **Jetpack Compose (Material Design 3)**, **Koin Dependency Injection**, **Ktor Network Client**, and **Modular Clean Architecture**.
+
+---
+
+## 🌐 White-Label, Multi-Brand & Product Flavor Strategy
+
+Just like our Flutter architecture, this Android blueprint supports **Single Core Monorepo → Multi-Brand & Multi-Country Deployments**.
+
+By isolating shared logic into `:core:domain`, `:core:data`, and `:core:ui`, you can build and maintain multiple distinct applications or client variants using Android **Gradle Product Flavors** (`app/build.gradle.kts`):
+
+* 🏢 **Multi-Client / White-Label Deployments:** Client A (`clientA`) vs Client B (`clientB`) with unique `applicationId`, API base URLs, and feature flags.
+* 🌍 **Multi-Country & Regional Variants:** Unique package namespaces (`com.example.us`, `com.example.fr`), local currency formats, and country-specific payment SDKs.
+* 🎨 **Dynamic UI Themes & Branding:** Swapping Material Design 3 color palettes and logo resource bundles without modifying feature ViewModels or use cases.
+* 🚩 **Feature Flag Governance:** Toggling modules on/off dynamically per client tier via `BuildConfig` fields or Remote Config.
+
+---
+
+## 🛠️ Product Flavors Configuration (`app/build.gradle.kts`)
+
+```kotlin
+android {
+    ...
+    flavorDimensions += "brand"
+
+    productFlavors {
+        create("clientA") {
+            dimension = "brand"
+            applicationId = "com.android.clienta"
+            resValue("string", "app_name", "Alpha Brand (Client A)")
+            buildConfigField("String", "BASE_URL", "\"https://api.alpha-brand.com/v1\"")
+            buildConfigField("Boolean", "ENABLE_MOBILITY_MODULE", "true")
+        }
+
+        create("clientB") {
+            dimension = "brand"
+            applicationId = "com.android.clientb"
+            resValue("string", "app_name", "Beta Brand (Client B)")
+            buildConfigField("String", "BASE_URL", "\"https://api.beta-brand.fr/v1\"")
+            buildConfigField("Boolean", "ENABLE_MOBILITY_MODULE", "false")
+        }
+    }
+}
+```
+
+---
+
+## 🚀 Build Commands for Product Flavors
+
+```bash
+# Build Debug APK for Client A Target
+./gradlew assembleClientADebug
+
+# Build Debug APK for Client B Target
+./gradlew assembleClientBDebug
+
+# Build Release APK for Client A Target
+./gradlew assembleClientARelease
+
+# Run Unit Tests across all Flavors
+./gradlew test
+```
 
 ---
 
@@ -11,7 +71,7 @@ This repository provides a production-ready starter template for building modern
 
 The project is organized into clean, decoupled Gradle modules adhering to Clean Architecture principles:
 
-- **`:app`** — UI presentation layer (Screens, ViewModels, Navigation, Android Manifest).
+- **`:app`** — UI presentation layer (Screens, ViewModels, Navigation, Product Flavors, Android Manifest).
 - **`:core:domain`** — Pure Kotlin domain layer containing core models (`FileItem`) and repository contracts. Zero Android SDK dependencies.
 - **`:core:data`** — Data layer containing Ktor HTTP client implementation, repository concrete implementations, and Preference storage.
 - **`:core:ui`** — Reusable Compose components (`FileItemRow`, dialogs) and the Material 3 design system (`AppTheme`).
@@ -125,7 +185,7 @@ The project relies on the following production dependencies:
 ┌──────────────────────────────▼──────────────────────────────┐
 │ 5. Jetpack Compose UI (ui/feature/)                         │
 │    Composable screen reacting to UiState                    │
-└─────────────────────────────────────────────────────────────┘
+└──────────────────────────────┴──────────────────────────────┘
 ```
 
 ### Step 1: Define DTO & API Layer (`data/dto/NewFeatureDto.kt`)
@@ -225,8 +285,9 @@ val appModule = module {
 ## ✅ Best Practices & Verification Commands
 
 1. **Explicit Dispatchers:** Always use `Dispatchers.IO` for network operations with explicit dispatcher injection for unit testing.
-2. **Sealed UI States:** Every screen state must handle `Loading`, `Success`, `Error`, and `Empty`.
-3. **Verification Command:**
+2. **Product Flavors:** 100% of code inside `:core:domain`, `:core:data`, and `:core:ui` is shared across all product flavors (`clientA`, `clientB`).
+3. **Sealed UI States:** Every screen state must handle `Loading`, `Success`, `Error`, and `Empty`.
+4. **Verification Command:**
    ```bash
-   ./gradlew test assembleDebug
+   ./gradlew test assembleClientADebug
    ```
