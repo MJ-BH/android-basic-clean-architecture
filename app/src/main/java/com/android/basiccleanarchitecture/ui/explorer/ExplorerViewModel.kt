@@ -14,7 +14,7 @@ class ExplorerViewModel(
     private val repository: ExplorerRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState<List<FileItem>>>(UiState.Idle)
+    private val _uiState = MutableStateFlow<UiState<List<FileItem>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<FileItem>>> = _uiState.asStateFlow()
 
     private val _currentFolderId = MutableStateFlow<String?>(null)

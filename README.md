@@ -41,7 +41,7 @@ android-basic-clean-architecture/
     │   └── repository/         # ExplorerRepository domain interface
     └── ui/
         ├── explorer/           # ExplorerViewModel & Compose UI screens
-        └── state/              # UiState<T> sealed interface (Idle, Loading, Success, Error, Empty)
+        └── state/              # UiState<T> sealed interface (Loading, Success, Error, Empty)
 ```
 
 ---
@@ -50,7 +50,7 @@ android-basic-clean-architecture/
 
 * **Jetpack Compose (Material Design 3):** Fully declarative UI built with standard Compose components.
 * **Koin Dependency Injection:** Lightweight, idiomatic Kotlin DI framework.
-* **Sealed `UiState<T>` State Machine:** Immutable reactive state management using `StateFlow`.
+* **Sealed `UiState<T>` State Machine:** Immutable reactive state management using `StateFlow` (`Loading`, `Success`, `Error`, `Empty`).
 * **Ktor Client Network Layer:** Modern Kotlin-multiplatform compatible HTTP client.
 * **Fake Data Provider (`FakeExplorerApi`):** Pre-configured mock data source with latency simulation for offline testing.
 
@@ -163,7 +163,7 @@ class NewFeatureViewModel(
     private val repository: NewFeatureRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState<List<NewFeatureEntity>>>(UiState.Idle)
+    private val _uiState = MutableStateFlow<UiState<List<NewFeatureEntity>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<NewFeatureEntity>>> = _uiState
 
     fun loadData() {
