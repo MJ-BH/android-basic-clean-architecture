@@ -1,4 +1,4 @@
-# Oodrive / Android Technical Architecture Rules
+# Android Basic Clean Architecture Rules
 
 1. **Tech Stack**:
    - Dependency Injection: `Koin`
@@ -13,4 +13,4 @@
 
 3. **Concurrency & Verification**:
    - Use `Dispatchers.IO` for network operations with explicit dispatcher injection for unit testing.
-   - Verification command: `./gradlew test assembledDebug`.
+   - Verification command: `./gradlew test assembleDebug`.
