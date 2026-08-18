@@ -7,6 +7,16 @@ This repository provides a production-ready starter template for building modern
 
 ---
 
+## 🔗 Backend Microservices Integration
+
+This Android mobile application connects directly with our **[microservices-blueprint-architecture](https://github.com/MJ-BH/microservices-blueprint-architecture)** backend ecosystem:
+- **`auth-service`**: Handles login, registration, and Ktor 401 token refresh interceptors.
+- **`explorer-service`**: Serves file & folder hierarchies (`FileItem`), parent-child navigation, and folder management.
+- **`url-builder-service`**: Generates secure pre-signed upload/download URLs (AWS S3, Cloudflare R2, MinIO, Local NAS) when users upload documents from Jetpack Compose screens.
+- **`email-service`**: Consumes background RabbitMQ messages to dispatch email alerts and file receipts.
+
+---
+
 ## 🌐 White-Label, Multi-Brand & Product Flavor Strategy
 
 Just like our Flutter architecture, this Android blueprint supports **Single Core Monorepo → Multi-Brand & Multi-Country Deployments**.
